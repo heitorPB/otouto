@@ -1,29 +1,31 @@
  -- Requires that the "fortune" program is installed on your computer.
 
-local s = io.popen('fortune'):read('*all')
-if s:match('fortune: command not found') then
-	print('fortune is not installed on this computer.')
-	print('fortune.lua will not be enabled.')
-	return
+local fortune = {}
+
+local utilities = require('utilities')
+
+function fortune:init()
+	local s = io.popen('fortune'):read('*all')
+	if s:match('not found$') then
+		print('fortune is not installed on this computer.')
+		print('fortune.lua will not be enabled.')
+		return
+	end
+
+	fortune.triggers = utilities.triggers(self.info.username):t('fortune').table
 end
 
-local command = 'fortune'
-local doc = '`Returns a UNIX fortune.`'
+fortune.command = 'fortune'
+fortune.doc = '`Returns a UNIX fortune.`'
 
-local triggers = {
-	'^/fortune[@'..bot.username..']*'
-}
+function fortune:action(msg)
 
-local action = function(msg)
-
-	local message = io.popen('fortune'):read('*all')
-	sendMessage(msg.chat.id, message)
+	local fortunef = io.popen('fortune')
+	local output = fortunef:read('*all')
+	output = '```\n' .. output .. '\n```'
+	utilities.send_message(self, msg.chat.id, output, true, nil, true)
+	fortunef:close()
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return fortune

@@ -1,105 +1,83 @@
 return {
+
+	-- Your authorization token from the botfather.
 	bot_api_key = '',
-	google_api_key = '',
-	google_cse_key = '',
-	lastfm_api_key = '',
-	owm_api_key = '',
-	biblia_api_key = '',
-	thecatapi_key = '',
-	nasa_api_key = '',
-	time_offset = 0,
-	lang = 'en',
-	antisquig = false,
-	cli_port = 4567,
+	-- Your Telegram ID.
 	admin = 00000000,
-	admin_name = 'John Smith',
+	-- Two-letter language code.
+	lang = 'en',
+	-- The channel, group, or user to send error reports to.
+	-- If this is not set, errors will be printed to the console.
 	log_chat = nil,
+	-- The port used to communicate with tg for administration.lua.
+	-- If you change this, make sure you also modify launch-tg.sh.
+	cli_port = 4567,
+	-- The block of text returned by /start.
 	about_text = [[
-I am otouto, the plugin-wielding, multi-purpose Telegram bot.
+I am otouto, the plugin-wielding, multipurpose Telegram bot.
 
 Send /help to get started.
-]]	,
-	errors = {
+	]],
+
+	-- https://datamarket.azure.com/dataset/bing/search
+	bing_api_key = '',
+	-- http://console.developers.google.com
+	google_api_key = '',
+	-- https://cse.google.com/cse
+	google_cse_key = '',
+	-- http://openweathermap.org/appid
+	owm_api_key = '',
+	-- http://last.fm/api
+	lastfm_api_key = '',
+	-- http://api.biblia.com
+	biblia_api_key = '',
+	-- http://thecatapi.com/docs.html
+	thecatapi_key = '',
+	-- http://api.nasa.gov
+	nasa_api_key = '',
+	-- http://tech.yandex.com/keys/get
+	yandex_key = '',
+	-- http://developer.simsimi.com/signUp
+	simsimi_key = '',
+	simsimi_trial = true,
+
+	errors = { -- Generic error messages used in various plugins.
 		connection = 'Connection error.',
 		results = 'No results found.',
 		argument = 'Invalid argument.',
 		syntax = 'Invalid syntax.',
-		antisquig = 'This group is English only.',
-		moderation = 'I do not moderate this group.',
-		not_mod = 'This command must be run by a moderator.',
-		not_admin = 'This command must be run by an administrator.',
 		chatter_connection = 'I don\'t feel like talking right now.',
 		chatter_response = 'I don\'t know what to say to that.'
 	},
-	greetings = {
-		['Hello, #NAME.'] = {
-			'hello',
-			'hey',
-			'sup',
-			'hi',
-			'good morning',
-			'good day',
-			'good afternoon',
-			'good evening'
-		},
-		['Goodbye, #NAME.'] = {
-			'bye',
-			'later',
-			'see ya',
-			'good night'
-		},
-		['Welcome back, #NAME.'] = {
-			'i\'m home',
-			'i\'m back'
-		},
-		['You\'re welcome, #NAME.'] = {
-			'thanks',
-			'thank you'
-		}
-	},
-	moderation = {
-		admins = {
-			['00000000'] = 'You'
-		},
-		admin_group = -00000000,
-		realm_name = 'My Realm'
-	},
-	plugins = {
-		'control.lua',
-		'blacklist.lua',
-		'about.lua',
-		'floodcontrol.lua',
-		'ping.lua',
-		'whoami.lua',
-		'nick.lua',
-		'echo.lua',
-		'gSearch.lua',
-		'gImages.lua',
-		'gMaps.lua',
-		'youtube.lua',
-		'wikipedia.lua',
-		'hackernews.lua',
-		'imdb.lua',
-		'calc.lua',
-		'urbandictionary.lua',
-		'time.lua',
-		'eightball.lua',
-		'reactions.lua',
-		'dice.lua',
-		'reddit.lua',
-		'xkcd.lua',
-		'slap.lua',
-		'commit.lua',
-		'pun.lua',
-		'pokedex.lua',
-		'bandersnatch.lua',
-		'currency.lua',
-		'cats.lua',
-		'hearthstone.lua',
-		'shout.lua',
-		'apod.lua',
+
+	plugins = { -- To enable a plugin, add its name to the list.
+		'control',
+		'blacklist',
+		'about',
+		'ping',
+		'whoami',
+		'nick',
+		'echo',
+		'gMaps',
+		'wikipedia',
+		'hackernews',
+		'imdb',
+		'calc',
+		'urbandictionary',
+		'time',
+		'eightball',
+		'dice',
+		'reddit',
+		'xkcd',
+		'slap',
+		'commit',
+		'pun',
+		'currency',
+		'cats',
+		'shout',
 		-- Put new plugins above this line.
-		'help.lua',
-		'greetings.lua'
+		'help',
+		'greetings'
 	}
+
 }

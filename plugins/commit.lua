@@ -1,11 +1,15 @@
  -- Commits from https://github.com/ngerakines/commitment.
 
-local command = 'commit'
-local doc = '`Returns a commit message from whatthecommit.com.`'
+local commit = {}
 
-local triggers = {
-	'^/commit[@'..bot.username..']*'
-}
+local utilities = require('utilities')
+
+commit.command = 'commit'
+commit.doc = '`Returns a commit message from whatthecommit.com.`'
+
+function commit:init()
+	commit.triggers = utilities.triggers(self.info.username):t('commit').table
+end
 
 local commits = {
 	"One does not simply merge into master",
@@ -407,18 +411,20 @@ local commits = {
 	"First Blood",
 	"Fixed the fuck out of #526!",
 	"I'm too old for this shit!",
-	"One little whitespace gets its very own commit! Oh, life is so erratic!"
+	"One little whitespace gets its very own commit! Oh, life is so erratic!",
+	"please dont let this be the problem",
+	"good: no crash. bad: nothing happens",
+	"trying",
+	"trying harder",
+	"i tried",
+	"fml"
 }
 
-local action = function(msg)
+function commit:action(msg)
 
-	sendMessage(msg.chat.id, '`'..commits[math.random(#commits)]..'`', true, nil, true)
+	local output = '`'..commits[math.random(#commits)]..'`'
+	utilities.send_message(self, msg.chat.id, output, true, nil, true)
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return commit

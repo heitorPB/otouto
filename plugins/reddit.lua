@@ -1,79 +1,85 @@
-local command = 'reddit [r/subreddit | query]'
-local doc = [[```
+local reddit = {}
+
+local HTTP = require('socket.http')
+local URL = require('socket.url')
+local JSON = require('dkjson')
+local utilities = require('utilities')
+
+reddit.command = 'reddit [r/subreddit | query]'
+reddit.doc = [[```
 /reddit [r/subreddit | query]
-Returns the four (if group) or eight (if private message) top posts for the given subreddit or query, or from the frontpage.
-Aliases: /r, /r/[subreddit]
+Returns the top posts or results for a given subreddit or query. If no argument is given, returns the top posts from r/all. Querying specific subreddits is not supported.
+Aliases: /r, /r/subreddit
 ```]]
 
-local triggers = {
-	'^/reddit[@'..bot.username..']*',
-	'^/r[@'..bot.username..']*$',
-	'^/r[@'..bot.username..']* ',
-	'^/r/'
-}
-
-local action = function(msg)
-
-	msg.text_lower = msg.text_lower:gsub('/r/', '/r r/')
-	local input = msg.text_lower:input()
-	local url
-
-	local limit = 4
-	if msg.chat.id == msg.from.id then
-		limit = 8
-	end
-
-	local source
-	if input then
-		if input:match('^r/.') then
-			url = 'http://www.reddit.com/' .. input .. '/.json?limit=' .. limit
-			source = '*/r/' .. input:match('^r/(.+)') .. '*\n'
-		else
-			url = 'http://www.reddit.com/search.json?q=' .. input .. '&limit=' .. limit
-			source = '*reddit results for* _' .. input .. '_ *:*\n'
-		end
-	else
-		url = 'http://www.reddit.com/.json?limit=' .. limit
-		source = '*/r/all*\n'
-	end
-
-	local jstr, res = HTTP.request(url)
-	if res ~= 200 then
-		sendReply(msg, config.errors.connection)
-		return
-	end
-
-	local jdat = JSON.decode(jstr)
-	if #jdat.data.children == 0 then
-		sendReply(msg, config.errors.results)
-		return
-	end
-
-	local output = ''
-	for i,v in ipairs(jdat.data.children) do
-		local title = v.data.title:gsub('%[.+%]', ''):gsub('&amp;', '&')
-		if title:len() > 48 then
-			title = title:sub(1,45) .. '...'
-		end
-		if v.data.over_18 then
-			v.data.is_self = true
-		end
-		local short_url = 'redd.it/' .. v.data.id
-		output = output .. '• [' .. title .. '](' .. short_url .. ')\n'
-		if not v.data.is_self then
-			output = output .. v.data.url:gsub('_', '\\_') .. '\n'
-		end
-	end
-
-	output = source .. output
-
-	sendMessage(msg.chat.id, output, true, nil, true)
-
+function reddit:init()
+	reddit.triggers = utilities.triggers(self.info.username, {'^/r/'}):t('reddit', true):t('r', true):t('r/', true).table
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+local format_results = function(posts)
+	local output = ''
+	for _,v in ipairs(posts) do
+		local post = v.data
+		local title = post.title:gsub('%[', '('):gsub('%]', ')'):gsub('&amp;', '&')
+		if title:len() > 256 then
+			title = title:sub(1, 253)
+			title = utilities.trim(title) .. '...'
+		end
+		local short_url = 'redd.it/' .. post.id
+		local s = '[' .. title .. '](' .. short_url .. ')'
+		if post.domain and not post.is_self and not post.over_18 then
+			s = '`[`[' .. post.domain .. '](' .. post.url:gsub('%)', '\\)') .. ')`]` ' .. s
+		end
+		output = output .. '• ' .. s .. '\n'
+	end
+	return output
+end
+
+reddit.subreddit_url = 'http://www.reddit.com/%s/.json?limit='
+reddit.search_url = 'http://www.reddit.com/search.json?q=%s&limit='
+reddit.rall_url = 'http://www.reddit.com/.json?limit='
+
+function reddit:action(msg)
+	-- Eight results in PM, four results elsewhere.
+	local limit = 4
+	if msg.chat.type == 'private' then
+		limit = 8
+	end
+	local text = msg.text_lower
+	if text:match('^/r/.') then
+		-- Normalize input so this hack works easily.
+		text = msg.text_lower:gsub('^/r/', '/r r/')
+	end
+	local input = utilities.input(text)
+	local source, url
+	if input then
+		if input:match('^r/.') then
+			input = utilities.get_word(input, 1)
+			url = reddit.subreddit_url:format(input) .. limit
+			source = '*/' .. utilities.md_escape(input) .. '*\n'
+		else
+			input = utilities.input(msg.text)
+			source = '*Results for* _' .. utilities.md_escape(input) .. '_ *:*\n'
+			input = URL.escape(input)
+			url = reddit.search_url:format(input) .. limit
+		end
+	else
+		url = reddit.rall_url .. limit
+		source = '*/r/all*\n'
+	end
+	local jstr, res = HTTP.request(url)
+	if res ~= 200 then
+		utilities.send_reply(self, msg, self.config.errors.connection)
+	else
+		local jdat = JSON.decode(jstr)
+		if #jdat.data.children == 0 then
+			utilities.send_reply(self, msg, self.config.errors.results)
+		else
+			local output = format_results(jdat.data.children)
+			output = source .. output
+			utilities.send_message(self, msg.chat.id, output, true, nil, true)
+		end
+	end
+end
+
+return reddit

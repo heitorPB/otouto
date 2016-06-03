@@ -1,49 +1,45 @@
  -- This plugin will allow the admin to blacklist users who will be unable to
  -- use the bot. This plugin should be at the top of your plugin list in config.
 
-local triggers = {
+local blacklist = {}
+
+local utilities = require('utilities')
+
+function blacklist:init()
+	if not self.database.blacklist then
+		self.database.blacklist = {}
+	end
+end
+
+blacklist.triggers = {
 	''
 }
 
- local action = function(msg)
+function blacklist:action(msg)
 
-	local blacklist = load_data('blacklist.json')
+	if self.database.blacklist[msg.from.id_str] then return end
+	if self.database.blacklist[msg.chat.id_str] then return end
+	if not msg.text:match('^/blacklist') then return true end
+	if msg.from.id ~= self.config.admin then return end
 
-	if blacklist[msg.from.id_str] then
-		return -- End if the sender is blacklisted.
+	local target = utilities.user_from_message(self, msg)
+	if target.err then
+		utilities.send_reply(self, msg, target.err)
+		return
 	end
 
-	if not string.match(msg.text_lower, '^/blacklist') then
-		return true
+	if tonumber(target.id) < 0 then
+		target.name = 'Group'
 	end
 
-	if msg.from.id ~= config.admin then
-		return -- End if the user isn't admin.
-	end
-
-	local input = msg.text:input()
-	if not input then
-		if msg.reply_to_message then
-			input = tostring(msg.reply_to_message.from.id)
-		else
-			sendReply(msg, 'You must use this command via reply or by specifying a user\'s ID.')
-			return
-		end
-	end
-
-	if blacklist[input] then
-		blacklist[input] = nil
-		sendReply(msg, input .. ' has been removed from the blacklist.')
+	if self.database.blacklist[tostring(target.id)] then
+		self.database.blacklist[tostring(target.id)] = nil
+		utilities.send_reply(self, msg, target.name .. ' has been removed from the blacklist.')
 	else
-		blacklist[input] = true
-		sendReply(msg, input .. ' has been added to the blacklist.')
+		self.database.blacklist[tostring(target.id)] = true
+		utilities.send_reply(self, msg, target.name .. ' has been added to the blacklist.')
 	end
-
-	save_data('blacklist.json', blacklist)
 
  end
 
- return {
-	action = action,
-	triggers = triggers
-}
+ return blacklist

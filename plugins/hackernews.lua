@@ -1,21 +1,27 @@
-local command = 'hackernews'
-local doc = [[```
+local hackernews = {}
+
+local HTTPS = require('ssl.https')
+local JSON = require('dkjson')
+local bindings = require('bindings')
+local utilities = require('utilities')
+
+hackernews.command = 'hackernews'
+hackernews.doc = [[```
 Returns four (if group) or eight (if private message) top stories from Hacker News.
 Alias: /hn
 ```]]
 
-local triggers = {
-	'^/hackernews[@'..bot.username..']*',
-	'^/hn[@'..bot.username..']*'
-}
+function hackernews:init()
+	hackernews.triggers = utilities.triggers(self.info.username):t('hackernews', true):t('hn', true).table
+end
 
-local action = function(msg)
+function hackernews:action(msg)
 
-	sendChatAction(msg.chat.id, 'typing')
+	bindings.sendChatAction(self, { chat_id = msg.chat.id, action = 'typing' } )
 
 	local jstr, res = HTTPS.request('https://hacker-news.firebaseio.com/v0/topstories.json')
 	if res ~= 200 then
-		sendReply(msg, config.errors.connection)
+		utilities.send_reply(self, msg, self.config.errors.connection)
 		return
 	end
 
@@ -31,7 +37,7 @@ local action = function(msg)
 		local res_url = 'https://hacker-news.firebaseio.com/v0/item/' .. jdat[i] .. '.json'
 		jstr, res = HTTPS.request(res_url)
 		if res ~= 200 then
-			sendReply(msg, config.errors.connection)
+			utilities.send_reply(self, msg, self.config.errors.connection)
 			return
 		end
 		local res_jdat = JSON.decode(jstr)
@@ -40,6 +46,10 @@ local action = function(msg)
 			title = title:sub(1, 45) .. '...'
 		end
 		local url = res_jdat.url
+		if not url then
+			utilities.send_reply(self, msg, self.config.errors.connection)
+			return
+		end
 		if url:find('%(') then
 			output = output .. '• ' .. title .. '\n' .. url:gsub('_', '\\_') .. '\n'
 		else
@@ -48,13 +58,8 @@ local action = function(msg)
 
 	end
 
-	sendMessage(msg.chat.id, output, true, nil, true)
+	utilities.send_message(self, msg.chat.id, output, true, nil, true)
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return hackernews

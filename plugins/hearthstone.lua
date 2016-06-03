@@ -1,38 +1,52 @@
  -- Plugin for the Hearthstone database provided by hearthstonejson.com.
 
-if not hs_dat then
+local hearthstone = {}
 
-	hs_dat = {}
+--local HTTPS = require('ssl.https')
+local JSON = require('dkjson')
+local utilities = require('utilities')
 
-	local jstr, res = HTTPS.request('http://hearthstonejson.com/json/AllSets.json')
-	if res ~= 200 then
-		print('Error connecting to hearthstonejson.com.')
-		print('hearthstone.lua will not be enabled.')
-	end
-	local jdat = JSON.decode(jstr)
+function hearthstone:init()
+	if not self.database.hearthstone or os.time() > self.database.hearthstone.expiration then
 
-	for k,v in pairs(jdat) do
-		for key,val in pairs(v) do
-			table.insert(hs_dat, val)
+		print('Downloading Hearthstone database...')
+
+		-- This stuff doesn't play well with lua-sec. Disable it for now; hack in curl.
+		--local jstr, res = HTTPS.request('https://api.hearthstonejson.com/v1/latest/enUS/cards.json')
+		--if res ~= 200 then
+		--  print('Error connecting to hearthstonejson.com.')
+		--  print('hearthstone.lua will not be enabled.')
+		--  return
+		--end
+		--local jdat = JSON.decode(jstr)
+
+		local s = io.popen('curl -s https://api.hearthstonejson.com/v1/latest/enUS/cards.json'):read('*all')
+		local d = JSON.decode(s)
+
+		if not d then
+			print('Error connecting to hearthstonejson.com.')
+			print('hearthstone.lua will not be enabled.')
+			return
 		end
+
+		self.database.hearthstone = d
+		self.database.hearthstone.expiration = os.time() + 600000
+
+		print('Download complete! It will be stored for a week.')
+
 	end
 
+	hearthstone.triggers = utilities.triggers(self.info.username):t('hearthstone', true):t('hs').table
 end
 
-local command = 'hearthstone <query>'
-local doc = [[```
+hearthstone.command = 'hearthstone <query>'
+hearthstone.doc = [[```
 /hearthstone <query>
 Returns Hearthstone card info.
-Alias: /hn
+Alias: /hs
 ```]]
 
-local triggers = {
-	'^/hearthstone[@'..bot.username..']*',
-	'^/hs[@'..bot.username..']*$',
-	'^/hs[@'..bot.username..']* '
-}
-
-local format_card = function(card)
+local function format_card(card)
 
 	local ctype = card.type
 	if card.race then
@@ -63,7 +77,8 @@ local format_card = function(card)
 		stats = card.health .. 'h'
 	end
 
-	local info = ''
+	-- unused?
+	local info
 	if card.text then
 		info = card.text:gsub('</?.->',''):gsub('%$','')
 		if card.flavor then
@@ -87,34 +102,29 @@ local format_card = function(card)
 
 end
 
-local action = function(msg)
+function hearthstone:action(msg)
 
-	local input = msg.text_lower:input()
+	local input = utilities.input(msg.text_lower)
 	if not input then
-		sendMessage(msg.chat.id, doc, true, msg.message_id, true)
+		utilities.send_message(self, msg.chat.id, hearthstone.doc, true, msg.message_id, true)
 		return
 	end
 
 	local output = ''
-	for k,v in pairs(hs_dat) do
-		if string.lower(v.name):match(input) then
+	for _,v in pairs(self.database.hearthstone) do
+		if type(v) == 'table' and string.lower(v.name):match(input) then
 			output = output .. format_card(v) .. '\n\n'
 		end
 	end
 
-	output = output:trim()
+	output = utilities.trim(output)
 	if output:len() == 0 then
-		sendReply(msg, config.errors.results)
+		utilities.send_reply(self, msg, self.config.errors.results)
 		return
 	end
 
-	sendMessage(msg.chat.id, output, true, msg.message_id, true)
+	utilities.send_message(self, msg.chat.id, output, true, msg.message_id, true)
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return hearthstone

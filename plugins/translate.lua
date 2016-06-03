@@ -1,42 +1,51 @@
-local command = 'translate [text]'
-local doc = [[```
+local translate = {}
+
+local HTTPS = require('ssl.https')
+local URL = require('socket.url')
+local JSON = require('dkjson')
+local utilities = require('utilities')
+
+translate.command = 'translate [text]'
+translate.doc = [[```
 /translate [text]
 Translates input or the replied-to message into the bot's language.
 ```]]
 
-local triggers = {
-	'^/translate[@'..bot.username..']*'
-}
+function translate:init()
+	translate.triggers = utilities.triggers(self.info.username):t('translate', true):t('tl', true).table
+end
 
-local action = function(msg)
+function translate:action(msg)
 
-	local input = msg.text:input()
+	local input = utilities.input(msg.text)
 	if not input then
 		if msg.reply_to_message and msg.reply_to_message.text then
 			input = msg.reply_to_message.text
 		else
-			sendMessage(msg.chat.id, doc, true, msg.message_id, true)
+			utilities.send_message(self, msg.chat.id, translate.doc, true, msg.message_id, true)
 			return
 		end
 	end
 
-	local url = 'https://translate.google.com/translate_a/single?client=t&ie=UTF-8&oe=UTF-8&hl=en&dt=t&sl=auto&tl=' .. config.lang .. '&text=' .. URL.escape(input)
+	local url = 'https://translate.yandex.net/api/v1.5/tr.json/translate?key=' .. self.config.yandex_key .. '&lang=' .. self.config.lang .. '&text=' .. URL.escape(input)
 
 	local str, res = HTTPS.request(url)
 	if res ~= 200 then
-		sendReply(msg, config.errors.connection)
+		utilities.send_reply(self, msg, self.config.errors.connection)
 		return
 	end
 
-	local output = latcyr(str:gmatch("%[%[%[\"(.*)\"")():gsub("\"(.*)", ""))
+	local jdat = JSON.decode(str)
+	if jdat.code ~= 200 then
+		utilities.send_reply(self, msg, self.config.errors.connection)
+		return
+	end
 
-	sendReply(msg.reply_to_message or msg, output)
+	local output = jdat.text[1]
+	output = '*Translation:*\n"' .. utilities.md_escape(output) .. '"'
+
+	utilities.send_reply(self, msg.reply_to_message or msg, output, true)
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return translate

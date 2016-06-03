@@ -1,49 +1,51 @@
-local command = 'whoami'
-local doc = [[```
+local whoami = {}
+
+local utilities = require('utilities')
+
+whoami.command = 'whoami'
+whoami.doc = [[```
 Returns user and chat info for you or the replied-to message.
 Alias: /who
 ```]]
 
-local triggers = {
-	'^/who[ami]*[@'..bot.username..']*$'
-}
+function whoami:init()
+	whoami.triggers = utilities.triggers(self.info.username):t('who', true):t('whoami').table
+end
 
-local action = function(msg)
+function whoami:action(msg)
 
 	if msg.reply_to_message then
 		msg = msg.reply_to_message
+		msg.from.name = utilities.build_name(msg.from.first_name, msg.from.last_name)
 	end
 
-	local from_name = msg.from.first_name
-	if msg.from.last_name then
-		from_name = from_name .. ' ' .. msg.from.last_name
+	local chat_id = math.abs(msg.chat.id)
+	if chat_id > 1000000000000 then
+		chat_id = chat_id - 1000000000000
 	end
+
+	local user = 'You are @%s, also known as *%s* `[%s]`'
 	if msg.from.username then
-		from_name = '@' .. msg.from.username .. ', AKA ' .. from_name
-	end
-	from_name = from_name .. ' (' .. msg.from.id .. ')'
-
-	local to_name
-	if msg.chat.title then
-		to_name = msg.chat.title .. ' (' .. math.abs(msg.chat.id) .. ').'
+		user = user:format(utilities.markdown_escape(msg.from.username), msg.from.name, msg.from.id)
 	else
-		to_name = '@' .. bot.username .. ', AKA ' .. bot.first_name .. ' (' .. bot.id .. ').'
+		user = 'You are *%s* `[%s]`,'
+		user = user:format(msg.from.name, msg.from.id)
 	end
 
-	local message = 'You are ' .. from_name .. ' and you are messaging ' .. to_name
-
-	local nicks = load_data('nicknames.json')
-	if nicks[msg.from.id_str] then
-		message = message .. '\nYour nickname is ' .. nicks[msg.from.id_str] .. '.'
+	local group = '@%s, also known as *%s* `[%s]`.'
+	if msg.chat.type == 'private' then
+		group = group:format(utilities.markdown_escape(self.info.username), self.info.first_name, self.info.id)
+	elseif msg.chat.username then
+		group = group:format(utilities.markdown_escape(msg.chat.username), msg.chat.title, chat_id)
+	else
+		group = '*%s* `[%s]`.'
+		group = group:format(msg.chat.title, chat_id)
 	end
 
-	sendReply(msg, message)
+	local output = user .. ', and you are messaging ' .. group
+
+	utilities.send_message(self, msg.chat.id, output, true, msg.message_id, true)
 
 end
 
-return {
-	action = action,
-	triggers = triggers,
-	doc = doc,
-	command = command
-}
+return whoami

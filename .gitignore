@@ -1,2 +1,3 @@
-plugins/administration.lua
-plugins/CUSTOM.lua
+plugins/mokubot*
+*.db
+tg
