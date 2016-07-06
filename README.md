@@ -11,11 +11,13 @@ otouto is free software; you are free to redistribute it and/or modify it under 
 
 | For Users                                     | For Coders                    |
 |:----------------------------------------------|:------------------------------|
-| [Setup](#setup)                               | [Introduction](#introduction) |
-| [Control plugins](#control-plugins)           | [Plugins](#plugins)           |
-| [Group Administration](#group-administration) | [Bindings](#bindings)         |
+| [Setup](#setup)                               | [Plugins](#plugins)           |
+| [Control plugins](#control-plugins)           | [Bindings](#bindings)         |
+| [Group administration](#group-administration) | [Database](#database)         |
 | [List of plugins](#list-of-plugins)           | [Output style](#output-style) |
 |                                               | [Contributors](#contributors) |
+
+* * *
 
 ## Setup
 You _must_ have Lua (5.2+), luasocket, luasec, multipart-post, and dkjson installed. You should also have lpeg, though it is not required. It is recommended you install these with LuaRocks.
@@ -35,29 +37,29 @@ When you are ready to start the bot, run `./launch.sh`. To stop the bot, send "/
 
 Note that certain plugins, such as translate.lua and greetings.lua, will require privacy mode to be disabled. Additionally, some plugins may require or make use of various API keys:
 
- - bing.lua: [Bing Search API](http://datamarket.azure.com/dataset/bing/search) key (`bing_api_key`)
- - gImages.lua & youtube.lua: Google [API](http://console.developers.google.com) and [CSE](https://cse.google.com/cse) keys (`google_api_key`, `google_cse_key`)
- - weather.lua: [OpenWeatherMap](http://openweathermap.org) API key (`owm_api_key`)
- - lastfm.lua: [last.fm](http://last.fm/api) API key (`lastfm_api_key`)
- - bible.lua: [Biblia](http://api.biblia.com) API key (`biblia_api_key`)
- - cats.lua: [The Cat API](http://thecatapi.com) API key (optional) (`thecatapi_key`)
- - apod.lua: [NASA](http://api.nasa.gov) API key (`nasa_api_key`)
- - translate.lua: [Yandex](http://tech.yandex.com/keys/get) API key (`yandex_key`)
- - chatter.lua: [SimSimi](http://developer.simsimi.com/signUp) API key (`simsimi_key`)
+ - `bing.lua`: [Bing Search API](http://datamarket.azure.com/dataset/bing/search) key (`bing_api_key`)
+ - `gImages.lua` & `youtube.lua`: Google [API](http://console.developers.google.com) and [CSE](https://cse.google.com/cse) keys (`google_api_key`, `google_cse_key`)
+ - `weather.lua`: [OpenWeatherMap](http://openweathermap.org) API key (`owm_api_key`)
+ - `lastfm.lua`: [last.fm](http://last.fm/api) API key (`lastfm_api_key`)
+ - `bible.lua`: [Biblia](http://api.biblia.com) API key (`biblia_api_key`)
+ - `cats.lua`: [The Cat API](http://thecatapi.com) API key (optional) (`thecatapi_key`)
+ - `apod.lua`: [NASA](http://api.nasa.gov) API key (`nasa_api_key`)
+ - `translate.lua`: [Yandex](http://tech.yandex.com/keys/get) API key (`yandex_key`)
+ - `chatter.lua`: [SimSimi](http://developer.simsimi.com/signUp) API key (`simsimi_key`)
 
 * * *
 
 ## Control plugins
 Some plugins are designed to be used by the bot's owner. Here are some examples, how they're used, and what they do.
 
-| Plugin        | Command    | Function                                           |
-|:--------------|:-----------|:---------------------------------------------------|
-| control.lua   | /reload    | Reloads all plugins and configuration.             |
-|               | /halt      | Shuts down the bot after saving the database.      |
-|               | /script    | Runs a list a bot commands, separated by newlines. |
-| blacklist.lua | /blacklist | Blocks people from using the bot.                  |
-| shell.lua     | /run       | Executes shell commands on the host system.        |
-| luarun.lua    | /lua       | Executes Lua commands in the bot's environment.    |
+| Plugin          | Command    | Function                                           |
+|:----------------|:-----------|:---------------------------------------------------|
+| `control.lua`   | /reload    | Reloads all plugins and configuration.             |
+|                 | /halt      | Shuts down the bot after saving the database.      |
+|                 | /script    | Runs a list a bot commands, separated by newlines. |
+| `blacklist.lua` | /blacklist | Blocks people from using the bot.                  |
+| `shell.lua`     | /run       | Executes shell commands on the host system.        |
+| `luarun.lua`    | /lua       | Executes Lua commands in the bot's environment.    |
 
 * * *
 
@@ -68,7 +70,7 @@ To get started, run `./tg-install.sh`. Note that this script is written for Ubun
 
 Once the installation is finished, enable the `administration` plugin in your config file. **The administration plugin must be loaded before the `about` and `blacklist` plugins.** You may have reason to change the default TCP port (4567); if that is the case, remember to change it in `tg-launch.sh` as well. Run `./tg-launch.sh` in a separate screen/tmux window. You'll have to enter your phone number and go through the login process the first time. The script is set to restart tg after two seconds, so you'll need to Ctrl+C after exiting.
 
-While tg is running, you may start/reload otouto with administration.lua enabled, and have access to a wide variety of administrative commands and automata. The administration "database" is stored in `administration.json`. To start using otouto to administrate a group (note that you must be the owner (or an administrator)), send `/gadd` to that group. For a list of commands, use `/ahelp`. Below I'll describe various functions now available to you.
+While tg is running, you may start/reload otouto with `administration.lua` enabled, and have access to a wide variety of administrative commands and automata. The administration "database" is stored in `administration.json`. To start using otouto to administrate a group (note that you must be the owner (or an administrator)), send `/gadd` to that group. For a list of commands, use `/ahelp`. Below I'll describe various functions now available to you.
 
 | Command     | Function                                        | Privilege | Internal? |
 |:------------|:------------------------------------------------|:----------|:----------|
@@ -151,71 +153,71 @@ Additionally, antiflood can be configured to automatically ban a user after he h
 
 ## List of plugins
 
-| Plugin              | Command                       | Function                                                | Aliases |
-|:--------------------|:------------------------------|:--------------------------------------------------------|:--------|
-| help.lua            | /help [command]               | Returns a list of commands or command-specific help.       | /h   |
-| about.lua           | /about                        | Returns the about text as configured in config.lua.               |
-| ping.lua            | /ping                         | The simplest plugin ever!                                         |
-| echo.lua            | /echo ‹text›                  | Repeats a string of text.                                         |
-| bing.lua            | /bing ‹query›                 | Returns Bing web results.                                  | /g   |
-| gImages.lua         | /images ‹query›               | Returns a Google image result.                             | /i   |
-| gMaps.lua           | /location ‹query›             | Returns location data from Google Maps.                    | /loc |
-| youtube.lua         | /youtube ‹query›              | Returns the top video result from YouTube.                 | /yt  |
-| wikipedia.lua       | /wikipedia ‹query›            | Returns the summary of a Wikipedia article.                | /w   |
-| lastfm.lua          | /np [username]                | Returns the song you are currently listening to.                  |
-| lastfm.lua          | /fmset [username]             | Sets your username for /np. /fmset -- will delete it.             |
-| hackernews.lua      | /hackernews                   | Returns the latest posts from Hacker News.                 | /hn  |
-| imdb.lua            | /imdb ‹query›                 | Returns film information from IMDb.                               |
-| hearthstone.lua     | /hearthstone ‹query›          | Returns data for Hearthstone cards matching the query.     | /hs  |
-| calc.lua            | /calc ‹expression›            | Returns conversions and solutions to math expressions.            |
-| bible.lua           | /bible ‹reference›            | Returns a Bible verse.                                     | /b   |
-| urbandictionary.lua | /urban ‹query›                | Returns the top definition from Urban Dictionary.          | /ud  |
-| time.lua            | /time ‹query›                 | Returns the time, date, and a timezone for a location.            |
-| weather.lua         | /weather ‹query›              | Returns current weather conditions for a given location.          |
-| nick.lua            | /nick ‹nickname›              | Set your nickname. /nick - will delete it.                        |
-| whoami.lua          | /whoami                       | Returns user and chat info for you or the replied-to user. | /who |
-| eightball.lua       | /8ball                        | Returns an answer from a magic 8-ball.                            |
-| dice.lua            | /roll ‹nDr›                   | Returns RNG dice rolls. Uses D&D notation.                        |
-| reddit.lua          | /reddit [r/subreddit ¦ query] | Returns the top results from a subreddit, query, or r/all. | /r   |
-| xkcd.lua            | /xkcd [query]                 | Returns an xkcd strip and its alt text.                           |
-| slap.lua            | /slap ‹target›                | Gives someone a slap (or worse).                                  |
-| commit.lua          | /commit                       | Returns a commit message from whatthecommit.com.                  |
-| fortune.lua         | /fortune                      | Returns a UNIX fortune.                                           |
-| pun.lua             | /pun                          | Returns a pun.                                                    |
-| pokedex.lua         | /pokedex ‹query›              | Returns a Pokedex entry.                                   | /dex |
-| currency.lua        | /cash [amount] ‹cur› to ‹cur› | Converts one currency to another.                                 |
-| cats.lua            | /cat                          | Returns a cat picture.                                            |
-| reactions.lua       | /reactions                    | Returns a list of emoticons which can be posted by the bot.       |
-| apod.lua            | /apod [date]                  | Returns the NASA Astronomy Picture of the Day.                    |
-| dilbert.lua         | /dilbert [date]               | Returns a Dilbert strip.                                          |
-| patterns.lua        | /s/‹from›/‹to›/               | Search-and-replace using Lua patterns.                            |
-| me.lua              | /me                           | Returns user-specific data stored by the bot.                     |
-| remind.lua          | /remind <duration> <message>  | Reminds a user of something after a duration of minutes.          |
+| Plugin                | Command                       | Function                                                | Aliases |
+|:----------------------|:------------------------------|:--------------------------------------------------------|:--------|
+| `help.lua`            | /help [command]               | Returns a list of commands or command-specific help.       | /h   |
+| `about.lua`           | /about                        | Returns the about text as configured in config.lua.               |
+| `ping.lua`            | /ping                         | The simplest plugin ever!                                         |
+| `echo.lua`            | /echo ‹text›                  | Repeats a string of text.                                         |
+| `bing.lua`            | /bing ‹query›                 | Returns Bing web results.                                  | /g   |
+| `gImages.lua`         | /images ‹query›               | Returns a Google image result.                             | /i   |
+| `gMaps.lua`           | /location ‹query›             | Returns location data from Google Maps.                    | /loc |
+| `youtube.lua`         | /youtube ‹query›              | Returns the top video result from YouTube.                 | /yt  |
+| `wikipedia.lua`       | /wikipedia ‹query›            | Returns the summary of a Wikipedia article.                | /w   |
+| `lastfm.lua`          | /np [username]                | Returns the song you are currently listening to.                  |
+| `lastfm.lua`          | /fmset [username]             | Sets your username for /np. /fmset -- will delete it.             |
+| `hackernews.lua`      | /hackernews                   | Returns the latest posts from Hacker News.                 | /hn  |
+| `imdb.lua`            | /imdb ‹query›                 | Returns film information from IMDb.                               |
+| `hearthstone.lua`     | /hearthstone ‹query›          | Returns data for Hearthstone cards matching the query.     | /hs  |
+| `calc.lua`            | /calc ‹expression›            | Returns conversions and solutions to math expressions.            |
+| `bible.lua`           | /bible ‹reference›            | Returns a Bible verse.                                     | /b   |
+| `urbandictionary.lua` | /urban ‹query›                | Returns the top definition from Urban Dictionary.          | /ud  |
+| `time.lua`            | /time ‹query›                 | Returns the time, date, and a timezone for a location.            |
+| `weather.lua`         | /weather ‹query›              | Returns current weather conditions for a given location.          |
+| `nick.lua`            | /nick ‹nickname›              | Set your nickname. /nick - will delete it.                        |
+| `whoami.lua`          | /whoami                       | Returns user and chat info for you or the replied-to user. | /who |
+| `eightball.lua`       | /8ball                        | Returns an answer from a magic 8-ball.                            |
+| `dice.lua`            | /roll ‹nDr›                   | Returns RNG dice rolls. Uses D&D notation.                        |
+| `reddit.lua`          | /reddit [r/subreddit ¦ query] | Returns the top results from a subreddit, query, or r/all. | /r   |
+| `xkcd.lua`            | /xkcd [query]                 | Returns an xkcd strip and its alt text.                           |
+| `slap.lua`            | /slap ‹target›                | Gives someone a slap (or worse).                                  |
+| `commit.lua`          | /commit                       | Returns a commit message from whatthecommit.com.                  |
+| `fortune.lua`         | /fortune                      | Returns a UNIX fortune.                                           |
+| `pun.lua`             | /pun                          | Returns a pun.                                                    |
+| `pokedex.lua`         | /pokedex ‹query›              | Returns a Pokedex entry.                                   | /dex |
+| `currency.lua`        | /cash [amount] ‹cur› to ‹cur› | Converts one currency to another.                                 |
+| `cats.lua`            | /cat                          | Returns a cat picture.                                            |
+| `reactions.lua`       | /reactions                    | Returns a list of emoticons which can be posted by the bot.       |
+| `apod.lua`            | /apod [date]                  | Returns the NASA Astronomy Picture of the Day.                    |
+| `dilbert.lua`         | /dilbert [date]               | Returns a Dilbert strip.                                          |
+| `patterns.lua`        | /s/‹from›/‹to›/               | Search-and-replace using Lua patterns.                            |
+| `me.lua`              | /me                           | Returns user-specific data stored by the bot.                     |
+| `remind.lua`          | /remind <duration> <message>  | Reminds a user of something after a duration of minutes.          |
+| `channel.lua`         | /ch <channel> \n <message>    | Sends a markdown-enabled message to a channel.                    |
 
 * * *
 
-## Introduction
-#todo
-
 ## Plugins
-otouto uses a robust plugin system, similar to yagop's [Telegram-Bot](http://github.com/yagop/telegram-bot). The aim of the otouto project is to contain any desirable bot feature within one universal bot framework.
+otouto uses a robust plugin system, similar to yagop's [Telegram-Bot](http://github.com/yagop/telegram-bot).
 
-Most plugins are intended for public use, but a few are for other purposes, like those used alongside [Liberbot](#liberbot-related-plugins), or for [use by the bot's owner](#control-plugins). See [here](#list-of-plugins) for a list of plugins.
+Most plugins are intended for public use, but a few are for other purposes, like those for [use by the bot's owner](#control-plugins). See [here](#list-of-plugins) for a list of plugins.
 
-A plugin can have five components, and two of them are required:
+There are five standard plugin components.
 
-| Component       | Description                                  | Required? |
-|:----------------|:---------------------------------------------|:----------|
-| plugin:action   | Main function. Expects `msg` table as an argument.   | Y |
-| plugin.triggers | Table of triggers for the plugin. Uses Lua patterns. | Y |
-| plugin:init     | Optional function run when the plugin is loaded.     | N |
-| plugin:cron     | Optional function to be called every minute.         | N |
-| plugin.command  | Basic command and syntax. Listed in the help text.   | N |
-| plugin.doc      | Usage for the plugin. Returned by "/help $command".  | N |
+| Component  | Description                                          |
+|:-----------|:-----------------------------------------------------|
+| `action`   | Main function. Expects `msg` table as an argument.   |
+| `triggers` | Table of triggers for the plugin. Uses Lua patterns. |
+| `init`     | Optional function run when the plugin is loaded.     |
+| `cron`     | Optional function to be called every minute.         |
+| `command`  | Basic command and syntax. Listed in the help text.   |
+| `doc`      | Usage for the plugin. Returned by "/help $command".  |
+| `error`    | Plugin-specific error message; false for no message. |
 
-The `bot:on_msg_receive` function adds a few variables to the `msg` table for your convenience. These are self-explanatory: `msg.from.id_str`, `msg.to.id_str`, `msg.chat.id_str`, `msg.text_lower`, `msg.from.name`.
 
-Return values from `plugin:action` are optional, but they do effect the flow. If it returns a table, that table will become `msg`, and `on_msg_receive` will continue with that. If it returns `true`, it will continue with the current `msg`.
+No component is required, but some depend on others. For example, `action` will never be run if there's no `triggers`, and `doc` will never be seen if there's no `command`.
+
+Return values from `action` are optional, but they do affect the flow. If it returns a table, that table will become `msg`, and `on_msg_receive` will continue with that. If it returns `true`, it will continue with the current `msg`.
 
 When an action or cron function fails, the exception is caught and passed to the `handle_exception` utilty and is either printed to the console or send to the chat/channel defined in `log_chat` in config.lua.
 
@@ -266,7 +268,7 @@ utilities.send_message(self, 987654321, 'Quick brown fox.', false, 54321, true)
 Uploading a file for the `sendPhoto` method would look like this:
 
 ```
-bindings.sendPhoto(self, { chat_id = 987654321 }, { photo = 'rarepepe.jpg' } )
+bindings.sendPhoto(self, { chat_id = 987654321 }, { photo = 'dankmeme.jpg' } )
 ```
 
 and using `sendPhoto` with a file ID would look like this:
@@ -279,6 +281,40 @@ Upon success, bindings will return the deserialized result from the API. Upon fa
 
 * * *
 
+## Database
+otouto doesn't use one. This isn't because of dedication to lightweightedness or some clever design choice. Interfacing with databases through Lua is never a simple, easy-to-learn process. As one of the goals of otouto is that it should be a bot which is easy to write plugins for, our approach to storing data is to treat our datastore like any ordinary Lua data structure. The "database" is a table accessible in the `database` value of the bot instance (usually `self.database`), and is saved as a JSON-encoded plaintext file each hour, or when the bot is told to halt. This way, keeping and interacting with persistent data is no different than interacting with a Lua table -- with one exception: Keys in tables used as associative arrays must not be numbers. If the index keys are too sparse, the JSON encoder/decoder will either change them to keys or throw an error.
+
+Alone, the database will have this structure:
+
+```
+{
+	users = {
+		["55994550"] = {
+			id = 55994550,
+			first_name = "Drew",
+			username = "topkecleon"
+		}
+	},
+	userdata = {
+		["55994550"] = {
+			nickname = "Worst coder ever",
+			lastfm = "topkecleon"
+		}
+	},
+	version = "3.11"
+}
+```
+
+`database.users` will store user information (usernames, IDs, etc) when the bot sees the user. Each table's key is the user's ID as a string.
+
+`database.userdata` is meant to store miscellanea from various plugins.
+
+`database.version` stores the last bot version that used it. This is to simplify migration to the next version of the bot an easy, automatic process.
+
+Data from other plugins is usually saved in a table with the same name of that plugin. For example, administration.lua stores data in `database.administration`.
+
+* * *
+
 ## Output style
 otouto plugins should maintain a consistent visual style in their output. This provides a recognizable and comfortable user experience.
 
@@ -287,7 +323,7 @@ Title lines should be **bold**, including any names and trailing punctuation (su
 
 > **Star Wars: Episode IV - A New Hope (1977)**
 >
-> **Search results for** _star wars_**:**
+> **Search results for** _star wars_ **:**
 >
 > **Changelog for otouto (**[Github](http://github.com/topkecleon/otouto)**):**
 
