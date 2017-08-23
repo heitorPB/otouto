@@ -1,15 +1,21 @@
+# Installs necessary dependencies for, and compiles, tg ("test" branch).
+
 #!/bin/sh
 
-# Will download lua-tg and will download and build tg's "test" branch.
-# Written for Ubuntu/Debian. If you're running Arch (the only acceptable
-# alternative), figure it out yourself.
+echo "This script is intended for Ubuntu. It has been tested on 16.04 and 14.04."
+echo "This script will request root privileges to install the following packages:"
+echo "git libreadline-dev libssl-dev libevent-dev make"
+echo "Press enter to continue. Use Ctrl-C to exit."
+read
 
-echo 'Requesting root privileges to install necessary packages:'
-echo 'libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev make'
-sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev make
-echo 'Compiling tg, test branch.'
+sudo apt-get update
+sudo apt-get install -y git libreadline-dev libssl-dev libevent-dev make
+sudo -k
 git clone http://github.com/vysheng/tg --recursive -b test
 cd tg
-./configure
+./configure --disable-libconfig --disable-liblua --disable-json
 make
-echo 'All done! Use ./tg-launch.sh to launch tg. Be sure to log in with your Telegram account.'
+cd ..
+
+echo 'All done! Use ./tg-launch.sh to launch tg.'
+echo 'Be sure to log in with your Telegram account.'

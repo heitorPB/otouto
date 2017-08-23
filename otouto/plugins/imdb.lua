@@ -1,53 +1,53 @@
-local imdb = {}
+--[[
+    imdb.lua
+    Returns the IMDb entry for a given query.
+
+    Copyright 2016 topkecleon <drew@otou.to>
+    This code is licensed under the GNU AGPLv3. See /LICENSE for details.
+]]--
 
 local HTTP = require('socket.http')
 local URL = require('socket.url')
 local JSON = require('dkjson')
 local utilities = require('otouto.utilities')
 
-imdb.command = 'imdb <query>'
+local imdb = {}
 
-function imdb:init(config)
-	imdb.triggers = utilities.triggers(self.info.username, config.cmd_pat):t('imdb', true).table
-	imdb.doc = [[```
-]]..config.cmd_pat..[[imdb <query>
-Returns an IMDb entry.
-```]]
+function imdb:init()
+    imdb.command = 'imdb <query>'
+    imdb.triggers = utilities.triggers(self.info.username, self.config.cmd_pat):t('imdb', true).table
+    imdb.doc = self.config.cmd_pat .. 'imdb <query> \nReturns an IMDb entry.'
 end
 
-function imdb:action(msg, config)
+function imdb:action(msg)
 
-	local input = utilities.input(msg.text)
-	if not input then
-		if msg.reply_to_message and msg.reply_to_message.text then
-			input = msg.reply_to_message.text
-		else
-			utilities.send_message(self, msg.chat.id, imdb.doc, true, msg.message_id, true)
-			return
-		end
-	end
+    local input = utilities.input_from_msg(msg)
+    if not input then
+        utilities.send_reply(msg, imdb.doc, 'html')
+        return
+    end
 
-	local url = 'http://www.omdbapi.com/?t=' .. URL.escape(input)
+    local url = 'http://www.omdbapi.com/?t=' .. URL.escape(input)
 
-	local jstr, res = HTTP.request(url)
-	if res ~= 200 then
-		utilities.send_reply(self, msg, config.errors.connection)
-		return
-	end
+    local jstr, res = HTTP.request(url)
+    if res ~= 200 then
+        utilities.send_reply(msg, self.config.errors.connection)
+        return
+    end
 
-	local jdat = JSON.decode(jstr)
+    local jdat = JSON.decode(jstr)
 
-	if jdat.Response ~= 'True' then
-		utilities.send_reply(self, msg, config.errors.results)
-		return
-	end
+    if jdat.Response ~= 'True' then
+        utilities.send_reply(msg, self.config.errors.results)
+        return
+    end
 
-	local output = '*' .. jdat.Title .. ' ('.. jdat.Year ..')*\n'
-	output = output .. jdat.imdbRating ..'/10 | '.. jdat.Runtime ..' | '.. jdat.Genre ..'\n'
-	output = output .. '_' .. jdat.Plot .. '_\n'
-	output = output .. '[Read more.](http://imdb.com/title/' .. jdat.imdbID .. ')'
+    local output = '*' .. jdat.Title .. ' ('.. jdat.Year ..')*\n'
+    output = output .. jdat.imdbRating ..'/10 | '.. jdat.Runtime ..' | '.. jdat.Genre ..'\n'
+    output = output .. '_' .. jdat.Plot .. '_\n'
+    output = output .. '[Read more.](http://imdb.com/title/' .. jdat.imdbID .. ')'
 
-	utilities.send_message(self, msg.chat.id, output, true, nil, true)
+    utilities.send_message(msg.chat.id, output, true, nil, true)
 
 end
 

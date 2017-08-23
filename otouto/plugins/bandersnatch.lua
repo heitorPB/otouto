@@ -1,15 +1,19 @@
-local bandersnatch = {}
+--[[
+    bandersnatch.lua
+    Shun the frumious Cumberbatch.
+
+    Copyright 2016 topkecleon <drew@otou.to>
+    This code is licensed under the GNU AGPLv3. See /LICENSE for details.
+]]--
 
 local utilities = require('otouto.utilities')
 
-bandersnatch.command = 'bandersnatch'
+local bandersnatch = {}
 
-function bandersnatch:init(config)
-	bandersnatch.triggers = utilities.triggers(self.info.username, config.cmd_pat):t('bandersnatch'):t('bc').table
-	bandersnatch.doc = [[```
-Shun the frumious Bandersnatch.
-Alias: ]]..config.cmd_pat..[[bc
-```]]
+function bandersnatch:init()
+    bandersnatch.command = 'bandersnatch'
+    bandersnatch.triggers = utilities.triggers(self.info.username, self.config.cmd_pat):t('bandersnatch'):t('bc').table
+    bandersnatch.doc = 'Shun the frumious Bandersnatch. \nAlias: ' .. self.config.cmd_pat .. 'bc'
 end
 
 local fullnames = { "Wimbledon Tennismatch", "Rinkydink Curdlesnoot", "Butawhiteboy Cantbekhan", "Benadryl Claritin", "Bombadil Rivendell", "Wanda's Crotchfruit", "Biblical Concubine", "Syphilis Cankersore", "Buckminster Fullerene", "Bourgeoisie Capitalist" }
@@ -20,15 +24,15 @@ local lastnames = { "Coddleswort", "Crumplesack", "Curdlesnoot", "Calldispatch",
 
 function bandersnatch:action(msg)
 
-	local output
+    local output
 
-	if math.random(10) == 10 then
-		output = fullnames[math.random(#fullnames)]
-	else
-		output = firstnames[math.random(#firstnames)] .. ' ' .. lastnames[math.random(#lastnames)]
-	end
+    if math.random(10) == 10 then
+        output = fullnames[math.random(#fullnames)]
+    else
+        output = firstnames[math.random(#firstnames)] .. ' ' .. lastnames[math.random(#lastnames)]
+    end
 
-	utilities.send_message(self, msg.chat.id, '_'..output..'_', true, nil, true)
+    utilities.send_message(msg.chat.id, '_'..output..'_', true, nil, true)
 
 end
 
